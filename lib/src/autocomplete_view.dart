@@ -441,8 +441,7 @@ class PlacesAutocomplete extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     /// Get text controller from [searchController] or create new instance of [TextEditingController] if [searchController] is null or empty
-    final textController = useState<TextEditingController>(
-        searchController ?? TextEditingController());
+    final textController = searchController ?? TextEditingController();
     return SafeArea(
       bottom: bottom,
       left: left,
@@ -466,15 +465,17 @@ class PlacesAutocomplete extends StatelessWidget {
                     hintText: searchHintText,
                     border: InputBorder.none,
                     filled: true,
-                    suffixIcon: (showClearButton && initialValue == null)
+                    suffixIcon: (showClearButton &&
+                            initialValue == null &&
+                            textController.text.isNotEmpty)
                         ? IconButton(
                             icon: const Icon(Icons.close),
-                            onPressed: () => textController.value.clear(),
+                            onPressed: () => textController.clear(),
                           )
                         : suffixIcon,
                   ),
               name: 'Search',
-              controller: initialValue == null ? textController.value : null,
+              controller: initialValue == null ? textController : null,
               selectionToTextTransformer: (result) {
                 return result.description ?? "";
               },
@@ -502,7 +503,7 @@ class PlacesAutocomplete extends StatelessWidget {
                 return predictions;
               },
               onSuggestionSelected: (value) async {
-                textController.value.selection = TextSelection.collapsed(
+                textController.selection = TextSelection.collapsed(
                     offset: textController.value.text.length);
                 _getDetailsByPlaceId(value.placeId ?? "", context);
                 onSuggestionSelected?.call(value);
@@ -563,6 +564,9 @@ class PlacesAutocomplete extends StatelessWidget {
         language: language,
         fields: fields,
       );
+
+      // do not remove this line
+      await Future.delayed(Duration(seconds: 1));
 
       /// When get any error from the API, show the error in the console.
       if (response.hasNoResults ||
